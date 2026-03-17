@@ -18,7 +18,17 @@ export class TransactionsService {
   async getUserTransactions(
     userId: string,
     query: TransactionQueryDto,
-  ): Promise<Transaction[]> {
+  ): Promise<{
+    data: Transaction[];
+    meta: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }> {
     const qb = this.txRepo
       .createQueryBuilder('tx')
       .where('tx.userId = :userId', { userId })
@@ -39,7 +49,7 @@ export class TransactionsService {
       );
     }
 
-    return qb.getMany();
+    return this.paginate(qb, query.page, query.limit);
   }
 
   async getTransactionByReference(
@@ -74,5 +84,40 @@ export class TransactionsService {
       count: Number(s.count),
       totalAmount: Number(s.totalAmount),
     }));
+  }
+
+  private async paginate(
+    qb: ReturnType<Repository<Transaction>['createQueryBuilder']>,
+    page?: number,
+    limit?: number,
+  ): Promise<{
+    data: Transaction[];
+    meta: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }> {
+    const safeLimit = Math.min(Math.max(limit ?? 20, 1), 100);
+    const safePage = Math.max(page ?? 1, 1);
+    const skip = (safePage - 1) * safeLimit;
+
+    const [data, total] = await qb.take(safeLimit).skip(skip).getManyAndCount();
+    const totalPages = total === 0 ? 0 : Math.ceil(total / safeLimit);
+
+    return {
+      data,
+      meta: {
+        page: safePage,
+        limit: safeLimit,
+        total,
+        totalPages,
+        hasNext: safePage < totalPages,
+        hasPrev: safePage > 1 && total > 0,
+      },
+    };
   }
 }

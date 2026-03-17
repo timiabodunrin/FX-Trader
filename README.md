@@ -53,7 +53,7 @@ Swagger docs will be available at `http://localhost:3000/api/docs`.
 - Fund wallet: `POST /wallet/fund`
 - Convert currency: `POST /wallet/convert`
 - Trade currency: `POST /wallet/trade`
-- Transactions: `GET /transactions` and `GET /transactions/:reference`
+- Transactions (paginated): `GET /transactions` and `GET /transactions/:reference`
 - Transaction stats: `GET /transactions/stats`
 
 Auth note: Wallet and transaction endpoints require JWT + verified email. FX endpoints are public.
