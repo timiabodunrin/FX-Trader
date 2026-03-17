@@ -3,11 +3,13 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
+import { UserRole } from '../../users/entities/user.entity';
 
 export interface AuthUser {
   id: string;
   email: string;
   isVerified: boolean;
+  role: UserRole;
 }
 
 export const CurrentUser = createParamDecorator(

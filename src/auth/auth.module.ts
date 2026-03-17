@@ -11,6 +11,7 @@ import { UsersModule } from '../users/users.module';
 import { MailModule } from '../mail/mail.module';
 import { OtpToken } from './entities/otp-token.entity';
 import { WalletModule } from '../wallet/wallet.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { WalletModule } from '../wallet/wallet.module';
     UsersModule,
     MailModule,
     WalletModule,
+    AnalyticsModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

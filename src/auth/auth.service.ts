@@ -14,6 +14,7 @@ import { MailService } from '../mail/mail.service';
 import { OtpService } from './otp.service';
 import { WalletService } from '../wallet/wallet.service';
 import { User } from '../users/entities/user.entity';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,7 @@ export class AuthService {
     private otpService: OtpService,
     private dataSource: DataSource,
     private walletService: WalletService,
+    private analyticsService: AnalyticsService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -51,6 +53,10 @@ export class AuthService {
     const { otp } = await this.otpService.createForUser(user);
     await this.mailService.sendOtp(user.email, otp, dto.fullName);
 
+    void this.analyticsService.log(user.id, 'register', {
+      email: user.email,
+    });
+
     return { message: 'Registration successful. Check your email for OTP.' };
   }
 
@@ -66,6 +72,9 @@ export class AuthService {
     await this.usersService.markVerified(user.id);
 
     const token = this.jwtService.sign({ sub: user.id, email: user.email });
+
+    void this.analyticsService.log(user.id, 'verify_email');
+
     return {
       message: 'Email verified successfully',
       access_token: token,
@@ -80,6 +89,9 @@ export class AuthService {
     }
 
     const token = this.jwtService.sign({ sub: user.id, email: user.email });
+
+    void this.analyticsService.log(user.id, 'login');
+
     return { access_token: token };
   }
 

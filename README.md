@@ -55,6 +55,7 @@ Swagger docs will be available at `http://localhost:3000/api/docs`.
 - Trade currency: `POST /wallet/trade`
 - Transactions (paginated): `GET /transactions` and `GET /transactions/:reference`
 - Transaction stats: `GET /transactions/stats`
+- Analytics (admin): `GET /analytics/summary`
 
 Auth note: Wallet and transaction endpoints require JWT + verified email. FX endpoints are public.
 
@@ -64,6 +65,7 @@ Auth note: Wallet and transaction endpoints require JWT + verified email. FX end
 - FX rate fetch happens before the DB transaction to avoid holding locks during network calls.
 - FX rates are cached (Redis/in-memory) and persisted as DB snapshots for fallback and audit.
 - OTPs are stored in a separate table and email verification is required before wallet actions.
+- Key user actions are recorded as activity logs for lightweight analytics.
 
 ## Environment Variables
 ```bash

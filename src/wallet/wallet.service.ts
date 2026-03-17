@@ -11,6 +11,7 @@ import {
   TransactionType,
 } from '../transactions/entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 @Injectable()
 export class WalletService {
@@ -24,6 +25,7 @@ export class WalletService {
     private readonly balanceRepo: Repository<WalletBalance>,
     @InjectRepository(Transaction)
     private readonly txRepo: Repository<Transaction>,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async getBalances(userId: string) {
@@ -147,6 +149,15 @@ export class WalletService {
       };
     });
 
+    const action = type === TransactionType.TRADE ? 'trade' : 'convert';
+    void this.analyticsService.log(userId, action, {
+      from,
+      to,
+      amount,
+      rate,
+      reference: result.reference,
+    });
+
     return result;
   }
 
@@ -159,7 +170,7 @@ export class WalletService {
     if (!user) throw new BadRequestException('User not found');
     const cur = this.normalizeCurrency(currency);
 
-    return this.dataSource.transaction(async (manager) => {
+    const result = await this.dataSource.transaction(async (manager) => {
       const walletRepo = manager.getRepository(Wallet);
       const balanceRepo = manager.getRepository(WalletBalance);
       const txRepo = manager.getRepository(Transaction);
@@ -214,6 +225,14 @@ export class WalletService {
         balance: updated,
       };
     });
+
+    void this.analyticsService.log(userId, 'fund', {
+      currency: cur,
+      amount,
+      reference: result.reference,
+    });
+
+    return result;
   }
 
   async createForUser(user: User, manager?: EntityManager): Promise<Wallet> {

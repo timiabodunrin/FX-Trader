@@ -11,6 +11,11 @@ import { Wallet } from '../../wallet/entities/wallet.entity';
 import { Transaction } from '../../transactions/entities/transaction.entity';
 import { OtpToken } from '../../auth/entities/otp-token.entity';
 
+export enum UserRole {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+}
+
 @Entity('users')
 export class User extends BaseEntity {
   @Column({ unique: true })
@@ -24,6 +29,13 @@ export class User extends BaseEntity {
 
   @Column({ default: false })
   isVerified: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
+  role: UserRole;
 
   @OneToOne(() => Wallet, (wallet) => wallet.user)
   wallet: Wallet;

@@ -18,6 +18,7 @@ import {
 } from '../transactions/entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
 import { BadRequestException } from '@nestjs/common';
+import { AnalyticsService } from '../analytics/analytics.service';
 
 type FindOneFn<T> = (options?: FindOneOptions<T>) => Promise<T | null>;
 type FindFn<T> = (options?: FindManyOptions<T>) => Promise<T[]>;
@@ -71,6 +72,11 @@ type TransactionRunner = {
     runInTransaction: (entityManager: EntityManager) => Promise<T>,
   ) => Promise<T>;
 };
+type AnalyticsLogFn = (
+  userId: string | null,
+  action: string,
+  meta?: Record<string, unknown>,
+) => Promise<void>;
 
 describe('WalletService', () => {
   let service: WalletService;
@@ -82,6 +88,8 @@ describe('WalletService', () => {
   let dataSource: TransactionRunner;
   let findByIdMock: jest.MockedFunction<FindByIdFn>;
   let getRateMock: jest.MockedFunction<GetRateFn>;
+  let analyticsLogMock: jest.MockedFunction<AnalyticsLogFn>;
+  let analyticsService: Pick<AnalyticsService, 'log'>;
   let manager: EntityManager;
 
   beforeEach(() => {
@@ -94,6 +102,12 @@ describe('WalletService', () => {
 
     getRateMock = jest.fn<ReturnType<GetRateFn>, Parameters<GetRateFn>>();
     fxService = { getRate: getRateMock };
+
+    analyticsLogMock = jest.fn<
+      ReturnType<AnalyticsLogFn>,
+      Parameters<AnalyticsLogFn>
+    >();
+    analyticsService = { log: analyticsLogMock };
 
     const getRepository = (
       entity: typeof Wallet | typeof WalletBalance | typeof Transaction,
@@ -118,6 +132,7 @@ describe('WalletService', () => {
       walletRepo as unknown as Repository<Wallet>,
       balanceRepo as unknown as Repository<WalletBalance>,
       txRepo as unknown as Repository<Transaction>,
+      analyticsService as unknown as AnalyticsService,
     );
   });
 
