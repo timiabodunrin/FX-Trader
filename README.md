@@ -5,6 +5,7 @@ registration, JWT auth, wallet balances, currency conversion/trades, and
 transaction history with FX-rate caching.
 
 ## Features
+
 - Email OTP registration + JWT authentication
 - Wallets with balances, funding, conversion, and trade flows
 - Transaction history and stats
@@ -12,6 +13,7 @@ transaction history with FX-rate caching.
 - Swagger API docs
 
 ## Tech Stack
+
 - NestJS, TypeORM
 - PostgreSQL
 - Redis (optional cache)
@@ -21,16 +23,19 @@ transaction history with FX-rate caching.
 - Docker + Docker Compose (local infra)
 
 ## Requirements
+
 - Node.js (LTS)
 - PostgreSQL
 - Redis (optional, for FX cache)
 
 ## Setup
+
 ```bash
 npm install
 ```
 
 Copy the sample env file, then run migrations and start the app:
+
 ```bash
 cp .env.example .env
 npm run migration:run
@@ -40,6 +45,7 @@ npm run start:dev
 Swagger docs will be available at `http://localhost:3000/api/docs`.
 
 ## Assumptions
+
 - Wallet is created at registration time.
 - Wallet balances are created lazily on first fund/convert, not pre-seeded.
 - Redis is optional; if `REDIS_HOST` is not set, FX caching runs in-memory only.
@@ -47,6 +53,7 @@ Swagger docs will be available at `http://localhost:3000/api/docs`.
 - `trade` is implemented as `convert` with `TransactionType.TRADE`.
 
 ## API Overview
+
 - Auth flow: `POST /auth/register` -> `POST /auth/verify` -> `POST /auth/login`
 - Resend OTP: `POST /auth/resend-otp`
 - Wallet balances: `GET /wallet`
@@ -60,6 +67,7 @@ Swagger docs will be available at `http://localhost:3000/api/docs`.
 Auth note: Wallet and transaction endpoints require JWT + verified email. FX endpoints are public.
 
 ## Architectural Decisions (Summary)
+
 - Multi-currency balances are stored per currency with a unique `(wallet_id, currency)` constraint.
 - Funding/convert/trade run inside a DB transaction with `pessimistic_write` locks on balances.
 - FX rate fetch happens before the DB transaction to avoid holding locks during network calls.
@@ -68,6 +76,7 @@ Auth note: Wallet and transaction endpoints require JWT + verified email. FX end
 - Key user actions are recorded as activity logs for lightweight analytics.
 
 ## Environment Variables
+
 ```bash
 # App
 PORT=3000
@@ -104,6 +113,7 @@ FX_CACHE_TTL_SECONDS=600
 ```
 
 ## Useful Scripts
+
 ```bash
 # development
 npm run start:dev
@@ -125,24 +135,28 @@ npm run test:cov
 ```
 
 ## Tests
+
 - `WalletService` unit tests cover funding, conversion/trade, balance retrieval, and common edge cases.
 
 ## Diagrams (Optional)
+
 ### Trading / Conversion Flow
+
 ```mermaid
 flowchart TD
-  A[Client Request: /wallet/convert or /wallet/trade] --> B[Auth + Verified Guards]
-  B --> C[Normalize & Validate Inputs]
-  C --> D[Fetch FX Rate (cache / API / DB fallback)]
-  D --> E[DB Transaction]
-  E --> F[Lock Balances (pessimistic_write)]
-  F --> G[Check Balance + Update]
-  G --> H[Create Transaction Record]
-  H --> I[Commit]
-  I --> J[Response: balances + rate + tx reference]
+  A["Client: /wallet/convert or /wallet/trade"] --> B["Auth + verified guards"]
+  B --> C["Normalize and validate inputs"]
+  C --> D["Fetch FX rate (cache, API, DB fallback)"]
+  D --> E["Open DB transaction"]
+  E --> F["Lock balance rows (pessimistic_write)"]
+  F --> G["Check balance and update"]
+  G --> H["Create transaction record"]
+  H --> I["Commit"]
+  I --> J["Return balances, rate, reference"]
 ```
 
 ### System Architecture (High-level)
+
 ```mermaid
 flowchart LR
   Client --> API[NestJS API]
@@ -167,6 +181,7 @@ flowchart LR
 ```
 
 ## Docker (optional)
+
 ```bash
 docker compose up --build
 ```
