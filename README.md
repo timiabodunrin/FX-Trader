@@ -133,7 +133,7 @@ npm run test:cov
 flowchart TD
   A[Client Request: /wallet/convert or /wallet/trade] --> B[Auth + Verified Guards]
   B --> C[Normalize & Validate Inputs]
-  C --> D[Fetch FX Rate (cache -> API -> DB fallback)]
+  C --> D[Fetch FX Rate (cache / API / DB fallback)]
   D --> E[DB Transaction]
   E --> F[Lock Balances (pessimistic_write)]
   F --> G[Check Balance + Update]
