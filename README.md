@@ -30,6 +30,12 @@ transaction history with FX-rate caching.
 
 ## Setup
 
+Docker (quick start):
+```bash
+docker compose up --build
+```
+
+Local development:
 ```bash
 npm install
 ```
@@ -77,40 +83,7 @@ Auth note: Wallet and transaction endpoints require JWT + verified email. FX end
 
 ## Environment Variables
 
-```bash
-# App
-PORT=3000
-NODE_ENV=development
-
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=yourpassword
-DB_NAME=fx_trading
-
-# Redis (optional)
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-REDIS_DB=0
-
-# JWT
-JWT_SECRET=your_super_secret_key
-JWT_EXPIRES_IN=7d
-
-# Mail (Gmail SMTP)
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USER=your@gmail.com
-MAIL_PASS=your_app_password
-MAIL_FROM=FX Trading <your@gmail.com>
-
-# FX API
-FX_API_KEY=your_exchangerate_api_key
-FX_API_URL=https://v6.exchangerate-api.com/v6
-FX_CACHE_TTL_SECONDS=600
-```
+All required variables are documented in `.env.example`.
 
 ## Useful Scripts
 
@@ -180,11 +153,5 @@ flowchart LR
   API --> Analytics
 ```
 
-## Docker (optional)
-
-```bash
-docker compose up --build
-```
-
-This will start PostgreSQL, Redis, and the API, then run migrations
+Docker will start PostgreSQL, Redis, and the API, then run migrations
 automatically on startup.
