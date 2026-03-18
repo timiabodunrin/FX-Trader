@@ -127,6 +127,45 @@ npm run test:cov
 ## Tests
 - `WalletService` unit tests cover funding, conversion/trade, balance retrieval, and common edge cases.
 
+## Diagrams (Optional)
+### Trading / Conversion Flow
+```mermaid
+flowchart TD
+  A[Client Request: /wallet/convert or /wallet/trade] --> B[Auth + Verified Guards]
+  B --> C[Normalize & Validate Inputs]
+  C --> D[Fetch FX Rate (cache -> API -> DB fallback)]
+  D --> E[DB Transaction]
+  E --> F[Lock Balances (pessimistic_write)]
+  F --> G[Check Balance + Update]
+  G --> H[Create Transaction Record]
+  H --> I[Commit]
+  I --> J[Response: balances + rate + tx reference]
+```
+
+### System Architecture (High-level)
+```mermaid
+flowchart LR
+  Client --> API[NestJS API]
+  API --> DB[(PostgreSQL)]
+  API --> Redis[(Redis Cache)]
+  API --> FXAPI[FX Rate Provider]
+  API --> Mail[SMTP Mail Provider]
+
+  subgraph Core Modules
+    Auth[Auth + OTP]
+    Wallet[Wallet + Balances]
+    Tx[Transactions]
+    FX[FX Service]
+    Analytics[Analytics]
+  end
+
+  API --> Auth
+  API --> Wallet
+  API --> Tx
+  API --> FX
+  API --> Analytics
+```
+
 ## Docker (optional)
 ```bash
 docker compose up --build
